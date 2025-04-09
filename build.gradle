@@ -19,7 +19,6 @@ dependencies {
     implementation 'org.swinglabs.swingx:swingx-all:1.6.5-1'
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.15.1'
     implementation 'com.google.re2j:re2j:1.7'
-
     testImplementation     'junit:junit:4.13'
     
 }
