@@ -473,3 +473,37 @@ sp {halt*condition
    (write |The command: | <attr> | was issued! |)
    (interrupt) 
 }     
+
+####################### IMPASSE COPY IL TO OL #################################
+sp {elaborate*state*io
+    (state <s> ^superstate.io <io>)
+    -->
+    (<s> ^io <io>)
+} 
+
+sp {impasse*create-impasse-attribute
+   (state <s> ^impasse tie
+              ^item-count <item-count>
+              ^choices <choices>)
+   -->
+   (<s> ^IMPASSE_INFO <imp>)
+   (<imp> ^attribute operator
+          ^type tie
+          ^choices <choices>
+          ^item-count <item-count>)
+   (<s> ^item-to-copy <item-count>)
+}
+
+
+sp {impasse*il-to-ol 
+   (state <s> ^impasse tie
+              ^superstate.io <io>
+              ^IMPASSE_INFO <imp>)
+   (<io> ^input-link <il>
+         ^output-link <ol>)
+   -->
+   (write |Impasse of type tie in attribute operator|)
+   (write (cmd print --depth 2 <s>))
+   (<ol> ^INPUT_LINK (deep-copy <il>))
+   (<ol> ^IMPASSE_INFO (deep-copy <imp>))
+}

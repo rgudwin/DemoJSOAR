@@ -6,6 +6,8 @@
 package SoarBridge;
 
 import Simulation.Environment;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Iterator;
@@ -251,6 +253,24 @@ public class SoarBridge
         return(parvalue);
     }
     
+    public static void exportGraph(Identifier id, StringBuilder builder, int indentLevel) {
+        String indent = "   ".repeat(indentLevel);
+        Iterator<Wme> wmes = id.getWmes();
+
+        while (wmes.hasNext()) {
+            Wme wme = wmes.next();
+            Symbol attr = wme.getAttribute();
+            Symbol value = wme.getValue();
+
+            if (value instanceof Identifier) {
+                builder.append(indent).append("* ").append(attr.toString()).append("\n");
+                exportGraph((Identifier) value, builder, indentLevel + 1);
+            } else {
+                builder.append(indent).append("- ").append(attr.toString())
+                       .append(": ").append(value.toString()).append("\n");
+            }
+        }
+    }
     
     /**
      * Process the OutputLink given by SOAR and return a list of commands to WS3D
@@ -265,15 +285,39 @@ public class SoarBridge
             if (agent != null)
             {
                 List<Wme> Commands = Wmes.matcher(agent).filter(agent.getInputOutput().getOutputLink());
-
                 for (Wme com : Commands)
                 {
                     String name  = com.getAttribute().asString().getValue();
                     Command.CommandType commandType = Enum.valueOf(Command.CommandType.class, name);
                     Command command = null;
-
                     switch(commandType)
                     {
+                        case IMPASSE_INFO:
+                            Identifier outputLinkImpasse = agent.getInputOutput().getOutputLink();
+
+                            StringBuilder impasseInfo = new StringBuilder();
+                            Iterator<Wme> wmesImpasse = outputLinkImpasse.getWmes();
+                            if(wmesImpasse.hasNext()) {
+                                Wme wme = wmesImpasse.next();
+                                wme = wmesImpasse.next();
+                                Symbol value = wme.getValue();
+                                exportGraph((Identifier) value, impasseInfo, 0);
+                            }
+                            System.out.println("Impasse happened. The input link is in 'inputlink.txt'. This are the impasse infos:\n" + impasseInfo.toString());
+                            break;
+                        case INPUT_LINK:
+                            Identifier outputLink = agent.getInputOutput().getOutputLink();
+
+                            StringBuilder inputLink = new StringBuilder();
+                            inputLink.append("* InputLink\n");
+                            Iterator<Wme> wmes = outputLink.getWmes();
+                            if(wmes.hasNext()) {
+                                Wme wme = wmes.next();
+                                Symbol value = wme.getValue();
+                                exportGraph((Identifier) value, inputLink, 1);
+                            }
+                            Files.write(Paths.get("inputlink.txt"), inputLink.toString().getBytes());
+                            break;
                         case MOVE:
                             Float rightVelocity = null;
                             Float leftVelocity = null;

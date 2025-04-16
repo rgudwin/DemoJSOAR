@@ -15,7 +15,9 @@ public class Command
     {
         MOVE,
         GET,
-        EAT
+        EAT,
+        INPUT_LINK,
+        IMPASSE_INFO
     }
 
     private CommandType commandType;
