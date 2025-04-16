@@ -472,7 +472,7 @@ sp {halt*condition
    -->
    (write |The command: | <attr> | was issued! |)
    (interrupt) 
-}     
+}
 
 ####################### IMPASSE COPY IL TO OL #################################
 sp {elaborate*state*io
@@ -513,5 +513,37 @@ sp {impasse*il-to-ol
    (write |Impasse of type tie in attribute operator|)
    (write (cmd print --depth 2 <s>))
    (<ol> ^INPUT_LINK (deep-copy <il>))
+   (interrupt)
+}
+
+sp {impasse*il-to-ol-no-change-state
+   (state <s> ^impasse no-change
+              ^attribute state
+              ^superstate.io <io>)
+    (<io> ^output-link <ol>
+          ^input-link <il>)
+   -->
+   (write |Impasse of type: no-change in attribute state|)
+   (write (cmd print --depth 1 <s>))
+   (<ol> ^INPUT_LINK (deep-copy <il>))
+   (<ol> ^IMPASSE_INFO <imp>)
+   (<imp> ^attribute state
+	  ^impasse no-change)
+   (interrupt)
+}
+
+sp {impasse*il-to-ol-no-change-operator
+   (state <s> ^impasse no-change
+              ^attribute operator
+              ^superstate.io <io>)
+    (<io> ^output-link <ol>
+          ^input-link <il>)
+   -->
+   (write |Impasse of type: no-change in attribute operator|)
+   (write (cmd print --depth 1 <s>))
+   (<ol> ^INPUT_LINK (deep-copy <il>))
+   (<ol> ^IMPASSE_INFO <imp>)
+   (<imp> ^attribute operator
+	  ^impasse no-change)
    (interrupt)
 }
