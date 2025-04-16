@@ -6,6 +6,8 @@
 package SoarBridge;
 
 import Simulation.Environment;
+import static SoarBridge.Command.CommandType.IMPASSE_INFO;
+import static SoarBridge.Command.CommandType.INPUT_LINK;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -301,7 +303,9 @@ public class SoarBridge
                             Iterator<Wme> wmesImpasse = outputLinkImpasse.getWmes();
                             if(wmesImpasse.hasNext()) {
                                 Wme wme = wmesImpasse.next();
-                                wme = wmesImpasse.next();
+                                if(!wme.getAttribute().toString().equals(IMPASSE_INFO.toString())){
+                                     wme = wmesImpasse.next();
+                                }
                                 Symbol value = wme.getValue();
                                 exportGraph((Identifier) value, impasseInfo, 0);
                             }
@@ -316,6 +320,9 @@ public class SoarBridge
                             Iterator<Wme> wmes = outputLink.getWmes();
                             if(wmes.hasNext()) {
                                 Wme wme = wmes.next();
+                                if(!wme.getAttribute().toString().equals(INPUT_LINK.toString())){
+                                     wme = wmes.next();
+                                }
                                 Symbol value = wme.getValue();
                                 exportGraph((Identifier) value, inputLink, 1);
                             }
