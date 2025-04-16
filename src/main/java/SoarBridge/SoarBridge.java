@@ -8,6 +8,7 @@ package SoarBridge;
 import Simulation.Environment;
 import static SoarBridge.Command.CommandType.IMPASSE_INFO;
 import static SoarBridge.Command.CommandType.INPUT_LINK;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -15,6 +16,7 @@ import java.util.Calendar;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.jsoar.kernel.Agent;
 import org.jsoar.kernel.Phase;
@@ -257,7 +259,7 @@ public class SoarBridge
         return(parvalue);
     }
     
-    public static void exportGraph(Identifier id, StringBuilder builder, int indentLevel) {
+    public static void exportWMEGraph(Identifier id, StringBuilder builder, int indentLevel) {
         String indent = "   ".repeat(indentLevel);
         Iterator<Wme> wmes = id.getWmes();
 
@@ -268,12 +270,25 @@ public class SoarBridge
 
             if (value instanceof Identifier) {
                 builder.append(indent).append("* ").append(attr.toString()).append("\n");
-                exportGraph((Identifier) value, builder, indentLevel + 1);
+                exportWMEGraph((Identifier) value, builder, indentLevel + 1);
             } else {
                 builder.append(indent).append("- ").append(attr.toString())
                        .append(": ").append(value.toString()).append("\n");
             }
         }
+    }
+    
+    private Symbol getIdentifierForAttribute(Identifier outputLink, Command.CommandType attribute) {
+        Symbol value = null;
+        Iterator<Wme> wmesImpasse = outputLink.getWmes();
+        if(wmesImpasse.hasNext()) {
+            Wme wme = wmesImpasse.next();
+            if(!wme.getAttribute().toString().equals(attribute.toString())){
+                 wme = wmesImpasse.next();
+            }
+            value = wme.getValue();
+        }
+        return value;
     }
     
     /**
@@ -297,37 +312,25 @@ public class SoarBridge
                     switch(commandType)
                     {
                         case IMPASSE_INFO:
-                            Identifier outputLinkImpasse = agent.getInputOutput().getOutputLink();
-
-                            StringBuilder impasseInfo = new StringBuilder();
-                            Iterator<Wme> wmesImpasse = outputLinkImpasse.getWmes();
-                            if(wmesImpasse.hasNext()) {
-                                Wme wme = wmesImpasse.next();
-                                if(!wme.getAttribute().toString().equals(IMPASSE_INFO.toString())){
-                                     wme = wmesImpasse.next();
-                                }
-                                Symbol value = wme.getValue();
-                                exportGraph((Identifier) value, impasseInfo, 0);
+                            command = new Command(Command.CommandType.IMPASSE_INFO);
+                            CommandImpasseInfo commandImpasseInfo = (CommandImpasseInfo)command.getCommandArgument();
+                            if (commandImpasseInfo != null)
+                            {
+                                Symbol value = getIdentifierForAttribute(agent.getInputOutput().getOutputLink(), IMPASSE_INFO);
+                                commandImpasseInfo.setImpasseInfoIdentifier(value);
+                                commandList.add(command);
                             }
-                            System.out.println("Impasse happened. The input link is in 'inputlink.txt'. This are the impasse infos:\n" + impasseInfo.toString());
-                            
                             break;
                         case INPUT_LINK:
-                            Identifier outputLink = agent.getInputOutput().getOutputLink();
-
-                            StringBuilder inputLink = new StringBuilder();
-                            inputLink.append("* InputLink\n");
-                            Iterator<Wme> wmes = outputLink.getWmes();
-                            if(wmes.hasNext()) {
-                                Wme wme = wmes.next();
-                                if(!wme.getAttribute().toString().equals(INPUT_LINK.toString())){
-                                     wme = wmes.next();
-                                }
-                                Symbol value = wme.getValue();
-                                exportGraph((Identifier) value, inputLink, 1);
+                            command = new Command(Command.CommandType.INPUT_LINK);
+                            CommandInputLink commandInputLink = (CommandInputLink)command.getCommandArgument();
+                            if (commandInputLink != null)
+                            {
+                                Symbol value = getIdentifierForAttribute(agent.getInputOutput().getOutputLink(), INPUT_LINK);
+                                commandInputLink.setInputLinkIdentifier(value);
+                                commandList.add(command);
                             }
-                            Files.write(Paths.get("inputlink.txt"), inputLink.toString().getBytes());
-                            isSoarBrigdeActive = false;
+
                             break;
                         case MOVE:
                             Float rightVelocity = null;
@@ -467,6 +470,14 @@ public class SoarBridge
                     case EAT:
                         processEatCommand((CommandEat)command.getCommandArgument());
                     break;
+                    
+                    case INPUT_LINK:
+                        processInputLinkCommand((CommandInputLink)command.getCommandArgument());
+                    break;
+                    
+                    case IMPASSE_INFO:
+                        processImpasseInfoCommand((CommandImpasseInfo)command.getCommandArgument());
+                    break;
 
                     default:System.out.println("Nenhum comando definido ...");
                         // Do nothing
@@ -528,7 +539,51 @@ public class SoarBridge
         }
         else
         {
-            logger.severe("Error processing processMoveCommand");
+            logger.severe("Error processing processEatCommand");
+        }
+    }
+    
+    /**
+     * Show impasse info
+     * @param soarCommandEat Soar Impasse Info Command Structure
+     */
+    private void processImpasseInfoCommand(CommandImpasseInfo soarCommandImpasseInfo) throws CommandExecException
+    {
+        if (soarCommandImpasseInfo != null)
+        {
+            StringBuilder impasseInfo = new StringBuilder();
+            exportWMEGraph((Identifier) soarCommandImpasseInfo.getImpasseInfoIdentifier(), impasseInfo, 0);
+            System.out.println("Impasse happened. This are the impasse infos:\n" + impasseInfo.toString());
+                            
+        }
+        else
+        {
+            logger.severe("Error processing processImpasseInfo");
+        }
+    }
+    
+    /**
+     * Show save input link when impasse
+     * @param soarCommandInputLink Soar Imput Link Command Structure
+     */
+    private void processInputLinkCommand(CommandInputLink soarCommandInputLink) throws CommandExecException
+    {
+        if (soarCommandInputLink != null)
+        {          
+            StringBuilder inputLink = new StringBuilder();
+            inputLink.append("* InputLink\n");
+            exportWMEGraph((Identifier) soarCommandInputLink.getInputLinkIdentifier(), inputLink, 1);
+            try {
+                Files.write(Paths.get("inputlink.txt"), inputLink.toString().getBytes());
+            } catch (IOException ex) {
+                Logger.getLogger(SoarBridge.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            isSoarBrigdeActive = false;
+            System.out.println("Input link is in file 'inputlink.txt'");
+        }
+        else
+        {
+            logger.severe("Error processing processInputLink");
         }
     }
     

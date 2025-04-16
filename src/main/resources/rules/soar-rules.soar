@@ -412,7 +412,7 @@ sp {pref*moveFood*moveJewel*moveJewelWins
 (<fuel> ^VALUE <value> > <threshold>)        
 -->
 (<s> ^operator <o2> > <o>)
-(write |moveFood vs moveJewel | <value> | higher than | <threshold> (crlf) )} 
+(write |moveFood vs moveJewel | <value> | higher than | <threshold> (crlf) )}
 
 # Move Food vs Move Jewel Preferences - Move Jewel Wins
 sp {pref*moveFood*moveJewel*tie
@@ -485,65 +485,29 @@ sp {impasse*create-impasse-attribute
    (state <s> ^impasse tie
               ^item-count <item-count>
               ^choices <choices>
-              ^superstate.io.output-link <ol>)
+              ^superstate.io.output-link.IMPASSE_INFO <imp>)
    -->
-   (<ol> ^IMPASSE_INFO <imp>)
-   (<imp> ^attribute operator
-          ^impasse-type tie
-          ^choices <choices>
+   (<imp> ^choices <choices>
           ^item-count <item-count>)
-   (<s> ^item-copy 0)
 }
 
 sp {impasse*copy-item
    (state <s> ^impasse tie
               ^item <item>
-              ^item-copy <item-copy>
               ^superstate.io.output-link.IMPASSE_INFO <imp>)
    -->
    (<imp> ^item (deep-copy <item>))
 }
 
-sp {impasse*il-to-ol 
-   (state <s> ^impasse tie
-              ^superstate.io <io>)
-   (<io> ^input-link <il>
-         ^output-link <ol>)
-   -->
-   (write |Impasse of type tie in attribute operator|)
-   (write (cmd print --depth 2 <s>))
-   (<ol> ^INPUT_LINK (deep-copy <il>))
-   (interrupt)
-}
-
 sp {impasse*il-to-ol-no-change-state
-   (state <s> ^impasse no-change
-              ^attribute state
+   (state <s> ^impasse <impasse>
+              ^attribute <att>
               ^superstate.io <io>)
     (<io> ^output-link <ol>
           ^input-link <il>)
    -->
-   (write |Impasse of type: no-change in attribute state|)
-   (write (cmd print --depth 1 <s>))
    (<ol> ^INPUT_LINK (deep-copy <il>))
    (<ol> ^IMPASSE_INFO <imp>)
-   (<imp> ^attribute state
-	  ^impasse no-change)
-   (interrupt)
-}
-
-sp {impasse*il-to-ol-no-change-operator
-   (state <s> ^impasse no-change
-              ^attribute operator
-              ^superstate.io <io>)
-    (<io> ^output-link <ol>
-          ^input-link <il>)
-   -->
-   (write |Impasse of type: no-change in attribute operator|)
-   (write (cmd print --depth 1 <s>))
-   (<ol> ^INPUT_LINK (deep-copy <il>))
-   (<ol> ^IMPASSE_INFO <imp>)
-   (<imp> ^attribute operator
-	  ^impasse no-change)
-   (interrupt)
+   (<imp> ^attribute <att>
+	  ^impasse <impasse>)
 }

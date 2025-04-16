@@ -46,6 +46,14 @@ public class Command
             case EAT:
                 commandArgument = new CommandEat();
                 break;
+                
+            case INPUT_LINK:
+                commandArgument = new CommandInputLink();
+                break;
+            
+            case IMPASSE_INFO:
+                commandArgument = new CommandImpasseInfo();
+                break;
 
             default:
                 commandArgument = null;
