@@ -56,6 +56,8 @@ public class SoarBridge
     public Creature c;
     public String input_link_string = "";
     public String output_link_string = "";
+    
+    public boolean isSoarBrigdeActive = true;
 
     /**
      * Constructor class
@@ -304,6 +306,7 @@ public class SoarBridge
                                 exportGraph((Identifier) value, impasseInfo, 0);
                             }
                             System.out.println("Impasse happened. The input link is in 'inputlink.txt'. This are the impasse infos:\n" + impasseInfo.toString());
+                            
                             break;
                         case INPUT_LINK:
                             Identifier outputLink = agent.getInputOutput().getOutputLink();
@@ -317,6 +320,7 @@ public class SoarBridge
                                 exportGraph((Identifier) value, inputLink, 1);
                             }
                             Files.write(Paths.get("inputlink.txt"), inputLink.toString().getBytes());
+                            isSoarBrigdeActive = false;
                             break;
                         case MOVE:
                             Float rightVelocity = null;
