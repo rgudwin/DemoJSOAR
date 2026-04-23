@@ -556,6 +556,36 @@ public class SoarBridge
        return(out); 
     }
     
+    public String stringWMN(Identifier id) {
+        String out = stringWMN(id,0);
+        return(out);
+    }
+    
+    public String stringWMN(Identifier id, int level) {
+        String out="";
+        Iterator<Wme> It = id.getWmes();
+        while (It.hasNext()) {
+            Wme wme = It.next();
+            Identifier idd = wme.getIdentifier();
+            Symbol a = wme.getAttribute();
+            Symbol v = wme.getValue();
+            Identifier testv = v.asIdentifier();
+            for (int i=0;i<level;i++) out += "   ";
+            if (testv != null) {
+                out += "* "+a.toString()+" []\n";
+                out += stringWMN(testv,level+1);
+            }
+            else out += "- "+a.toString()+": "+v.toString()+"\n";
+        }
+       return(out); 
+    }
+    
+    public String stringIL() {
+        Identifier il = agent.getInputOutput().getInputLink();
+        String out = "* InputLink\n"+stringWMN(il,1);
+        return(out);
+    }
+    
     public String stringInputLink() {
         Identifier il = agent.getInputOutput().getInputLink();
         String out = stringWME(il);

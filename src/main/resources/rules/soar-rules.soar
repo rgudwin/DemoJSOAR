@@ -1,5 +1,5 @@
 ################################  CONFIGURATION ################################
-watch 5
+watch 0
 learn --off
 epmem --set learning off 
 #smem --off
@@ -440,7 +440,7 @@ sp {pref*avoidBrick*avoidBrick*without*move*jewel-less
 (<o>  ^parameter <distance> < <distance2>)
 -->
 (<s> ^operator <o> > <o2>)
-(write |avoidBrick vs avoidBrick | <distance> | less than | <distance2>) (crlf)}
+(write |avoidBrick vs avoidBrick | <distance> | less than | <distance2> (crlf) )}
 
 # Avoid Brick vs Avoid Brick Preferences
 sp {pref*avoidBrick*avoidBrick*without*move*jewel-equals

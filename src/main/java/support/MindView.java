@@ -6,9 +6,13 @@
 package support;
 
 import SoarBridge.SoarBridge;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
 import java.util.Observable;
 import java.util.Observer;
 import javax.swing.ImageIcon;
+import javax.swing.JFileChooser;
 import ws3dproxy.model.World;
 import ws3dproxy.viewer.EnvironmentPanel;
 
@@ -23,6 +27,7 @@ public class MindView extends javax.swing.JFrame implements Observer {
     ImageIcon pause_icon = new ImageIcon(getClass().getResource("/images/pause-icon.png")); 
     ImageIcon play_icon = new ImageIcon(getClass().getResource("/images/play-icon.png"));
     WorkingMemoryViewer wmi;
+    String path=".";
 
     /**
      * Creates new form MindView
@@ -75,6 +80,7 @@ public class MindView extends javax.swing.JFrame implements Observer {
         jStart = new javax.swing.JMenuItem();
         jStop = new javax.swing.JMenuItem();
         jWatch = new javax.swing.JMenuItem();
+        jMenuItem1 = new javax.swing.JMenuItem();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
@@ -217,6 +223,14 @@ public class MindView extends javax.swing.JFrame implements Observer {
         });
         jDebug.add(jWatch);
 
+        jMenuItem1.setText("Save IL");
+        jMenuItem1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jMenuItem1ActionPerformed(evt);
+            }
+        });
+        jDebug.add(jMenuItem1);
+
         jMenuBar1.add(jDebug);
 
         setJMenuBar(jMenuBar1);
@@ -278,6 +292,26 @@ public class MindView extends javax.swing.JFrame implements Observer {
         wmi.setVisible(true);
     }//GEN-LAST:event_jWatchActionPerformed
 
+    private void jMenuItem1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jMenuItem1ActionPerformed
+        save(sb.stringIL());
+    }//GEN-LAST:event_jMenuItem1ActionPerformed
+
+    public void save(String s) {
+        String filename = "";
+        try {JFileChooser chooser = new JFileChooser(path);
+             if (chooser.showSaveDialog(null) == JFileChooser.APPROVE_OPTION) {
+                  filename = chooser.getSelectedFile().getCanonicalPath();
+                  path = filename;
+             }
+             if (!filename.equals("")) {
+                File logFile = new File(filename);
+	        BufferedWriter writer = new BufferedWriter(new FileWriter(logFile, false));
+                writer.write(s);                
+                writer.close();
+             }
+        } catch (Exception e) { e.printStackTrace(); }
+    }
+    
     public void update(Observable arg0, Object arg1) {
         this.repaint();
     }
@@ -380,6 +414,7 @@ public class MindView extends javax.swing.JFrame implements Observer {
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JMenuBar jMenuBar1;
+    private javax.swing.JMenuItem jMenuItem1;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JScrollPane jScrollPane1;
